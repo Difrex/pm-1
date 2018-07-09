@@ -27,7 +27,10 @@ func NewDB(path string) (*DB, error) {
 func checkConfig() {
 	dbPath := os.Getenv("HOME") + "/.PM/db.sqlite"
 	if !pathExists(dbPath) {
-		initBase()
+		err := initBase()
+		if err != nil {
+			fmt.Println("failed to initialize db:", err)
+		}
 		os.Exit(0)
 	}
 }
