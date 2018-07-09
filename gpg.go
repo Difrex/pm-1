@@ -41,10 +41,5 @@ func decrypt() (*DB, error) {
 		return nil, err
 	}
 
-	db, err := NewDB(path)
-	if err != nil {
-		return nil, err
-	}
-
-	return db, nil
+	return NewDB(path)
 }
