@@ -181,3 +181,44 @@ func selectByGroup(group string) ([]*password, error) {
 
 	return passwords, nil
 }
+
+func selectAll() ([]*password, error) {
+	decrypted, err := decrypt()
+	if err != nil {
+		return nil, err
+	}
+
+	conn, err := connect(decrypted)
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+
+	rows, err := conn.Query("select * from passwords")
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var passwords []*password
+	for rows.Next() {
+		passwd := &password{}
+		err = rows.Scan(
+			&passwd.id,
+			&passwd.name,
+			&passwd.username,
+			&passwd.resource,
+			&passwd.password,
+			&passwd.comment,
+			&passwd.group,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		passwords = append(passwords, passwd)
+	}
+
+	return passwords, nil
+}

@@ -73,6 +73,25 @@ func parseArgs() {
 		}
 
 		if name != "" && group == "" {
+			if name == "all" {
+				passwords, err := selectAll()
+				if err != nil {
+					fmt.Println("failed to get passwords")
+					return
+				}
+
+				if passwords == nil {
+					fmt.Println("no passwords found")
+					return
+				}
+
+				for _, p := range passwords {
+					fmt.Printf("%d | %s | %s | %s | %s | %s\n",
+						p.id, p.name, p.resource, p.username, p.group, p.comment)
+				}
+				return
+
+			}
 			passwd, err := selectByName(name)
 			if err != nil {
 				fmt.Println("failed to get password:", err)
