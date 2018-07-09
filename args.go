@@ -1,10 +1,10 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 
 	"github.com/atotto/clipboard"
+	"github.com/ogier/pflag"
 )
 
 var (
@@ -43,21 +43,21 @@ func printUsage() {
 }
 
 func initArgs() {
-	flag.BoolVar(&show, "s", false, "show password")
-	flag.StringVar(&name, "n", "", "name of the resource")
-	flag.StringVar(&group, "g", "", "name of the group")
-	flag.BoolVar(&new, "w", false, "add new password")
-	flag.StringVar(&link, "l", "", "link to the resource")
-	flag.StringVar(&user, "u", "", "username")
-	flag.StringVar(&comment, "c", "", "comment")
-	flag.StringVar(&pass, "p", "", "password")
-	flag.BoolVar(&remove, "r", false, "remove password")
-	flag.IntVar(&id, "i", -1, "password id")
-	flag.BoolVar(&open, "o", false, "open link")
-	flag.BoolVar(&interactive, "I", false, "interactive mode")
-	flag.Usage = printUsage
+	pflag.BoolVarP(&show, "show", "s", false, "show password")
+	pflag.StringVarP(&name, "name", "n", "", "name of the resource")
+	pflag.StringVarP(&group, "group", "g", "", "name of the group")
+	pflag.BoolVarP(&new, "write", "w", false, "add new password")
+	pflag.StringVarP(&link, "link", "l", "", "link to the resource")
+	pflag.StringVarP(&user, "user", "u", "", "username of the resource")
+	pflag.StringVarP(&comment, "comment", "c", "", "comment")
+	pflag.StringVarP(&pass, "password", "p", "", "password")
+	pflag.BoolVarP(&remove, "remove", "r", false, "remove password")
+	pflag.IntVarP(&id, "id", "i", -1, "password id")
+	pflag.BoolVarP(&open, "open", "o", false, "open link in browser")
+	pflag.BoolVarP(&interactive, "interactive", "I", false, "interactive mode")
+	pflag.Usage = printUsage
 
-	flag.Parse()
+	pflag.Parse()
 }
 
 func parseArgs() {
