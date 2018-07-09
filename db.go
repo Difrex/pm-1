@@ -8,6 +8,19 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+// DB implement database struct
+type DB struct {
+	// Database file path
+	Path string
+}
+
+// NewDB populate and return new *DB instance
+func NewDB() *DB {
+	return &DB{
+		Path: os.Getenv("HOME") + "/.PM/db.sqlite",
+	}
+}
+
 func connect(path string) (*sql.DB, error) {
 	return sql.Open("sqlite3", path)
 }
