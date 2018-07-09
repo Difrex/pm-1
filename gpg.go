@@ -1,40 +1,31 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
 	"os"
 	"time"
 
-	"runtime"
-
 	"github.com/Difrex/gpg"
 )
 
-func encrypt(path string) {
+func encrypt(path string) error {
 	dbPath := os.Getenv("HOME") + "/.PM/db.sqlite"
 	if pathExists(dbPath) {
-		err := cmd("rm", "-f", dbPath)
+		err := rmfile(dbPath)
 		if err != nil {
-			fmt.Println("failed to remove old database", err)
-			return
+			return err
 		}
 	}
 
 	err := gpg.EncryptFileRecipientSelf(path, dbPath)
 	if err != nil {
-		fmt.Println("failed to encrypt database", err.Error())
-		return
+		return err
 	}
 
-	err = cmd("rm", "-f", path)
-	if err != nil {
-		fmt.Println("failed to remove unencrypted database", err.Error())
-		return
-	}
+	return rmfile(path)
 }
 
-func decrypt() (string, error) {
+func decrypt() (*DB, error) {
 	dbPath := os.Getenv("HOME") + "/.PM/db.sqlite"
 	chars := "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 	name := make([]byte, 10)
@@ -43,19 +34,17 @@ func decrypt() (string, error) {
 		name[i] = chars[rand.Intn(len(chars))]
 	}
 
-	// Detect OS and swith to path output prefix
-	pathPrefix := "/dev/shm/"
-	if runtime.GOOS != "linux" {
-		pathPrefix = "/tmp/"
-	}
-
-	path := pathPrefix + ".pm" + string(name)
+	path := getPrefix() + ".pm" + string(name)
 
 	err := gpg.DecryptFile(dbPath, path)
 	if err != nil {
-		fmt.Println("failed to decrypt database", err)
-		return "", err
+		return nil, err
 	}
 
-	return path, nil
+	db, err := NewDB(path)
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }

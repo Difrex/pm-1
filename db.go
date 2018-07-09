@@ -10,61 +10,48 @@ import (
 
 // DB implement database struct
 type DB struct {
-	// Database file path
+	Conn *sql.DB
 	Path string
 }
 
 // NewDB populate and return new *DB instance
-func NewDB() *DB {
-	return &DB{
-		Path: os.Getenv("HOME") + "/.PM/db.sqlite",
+func NewDB(path string) (*DB, error) {
+	conn, err := sql.Open("sqlite3", path)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func connect(path string) (*sql.DB, error) {
-	return sql.Open("sqlite3", path)
+	return &DB{conn, path}, nil
 }
 
 func checkConfig() {
 	dbPath := os.Getenv("HOME") + "/.PM/db.sqlite"
 	if !pathExists(dbPath) {
-		init_base()
+		initBase()
 		os.Exit(0)
 	}
 }
 
-func init_base() {
+func initBase() error {
 	pmDir := os.Getenv("HOME") + "/.PM"
-	if pathExists(pmDir) {
-		fmt.Println("removing old directory...")
-		err := cmd("rm", "-rf", pmDir)
-		if err != nil {
-			fmt.Println("failed to remove directory", err)
-			return
-		}
-	}
-
 	fmt.Println("creating configuration directory...")
 	err := mkdir(pmDir)
 	if err != nil {
-		fmt.Println("failed to create configuration directory", err)
-		return
+		return err
 	}
 
 	pass := generate(16)
-	dbFile := "/tmp/" + pass
-	err = cmd("touch", dbFile)
+	dbFile := getPrefix() + pass
+	err = mkfile(dbFile)
 	if err != nil {
-		fmt.Println("failed to create database file", err)
-		return
+		return err
 	}
 
-	conn, err := connect(dbFile)
+	db, err := NewDB(dbFile)
 	if err != nil {
-		fmt.Println("failed to open the database file", err)
-		return
+		return err
 	}
-	defer conn.Close()
+	defer db.Conn.Close()
 
 	fmt.Println("creating database scheme...")
 	cmd := `
@@ -77,24 +64,19 @@ password VARCHAR(32) NOT NULL,
 comment TEXT NOT NULL,
 'group' VARCHAR(32) NOT NULL
 )`
-	_, err = conn.Exec(cmd)
-	if err != nil {
-		fmt.Println("failed to create db scheme", err)
-		return
-	}
-
-	fmt.Println("encrypting database...")
-	encrypt(dbFile)
-}
-
-func dbQuery(path string, query string, args ...interface{}) error {
-	conn, err := connect(path)
+	_, err = db.Conn.Exec(cmd)
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
 
-	tx, err := conn.Begin()
+	fmt.Println("encrypting database...")
+	return encrypt(dbFile)
+}
+
+func (db *DB) doQuery(query string, args ...interface{}) error {
+	defer db.Conn.Close()
+
+	tx, err := db.Conn.Begin()
 	if err != nil {
 		return err
 	}
@@ -111,104 +93,19 @@ func dbQuery(path string, query string, args ...interface{}) error {
 	}
 	tx.Commit()
 
-	return nil
+	return encrypt(db.Path)
 }
 
-func selectByName(name string) (*password, error) {
-	decrypted, err := decrypt()
-	if err != nil {
-		return nil, err
-	}
-
-	conn, err := connect(decrypted)
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close()
-
-	rows, err := conn.Query("select id, name, username, resource, password,"+
-		" comment, `group` from passwords where name=?", name)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	if !rows.Next() {
-		return nil, err
-	}
-
-	passwd := &password{}
-	err = rows.Scan(
-		&passwd.id,
-		&passwd.name,
-		&passwd.username,
-		&passwd.resource,
-		&passwd.password,
-		&passwd.comment,
-		&passwd.group,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return passwd, nil
-}
-
-func selectByGroup(group string) ([]*password, error) {
-	decrypted, err := decrypt()
-	if err != nil {
-		return nil, err
-	}
-
-	conn, err := connect(decrypted)
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close()
-
-	rows, err := conn.Query("select id, name, username, resource, password,"+
-		" comment, `group` from passwords where `group`=?", group)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var passwords []*password
-	for rows.Next() {
-		passwd := &password{}
-		err = rows.Scan(
-			&passwd.id,
-			&passwd.name,
-			&passwd.username,
-			&passwd.resource,
-			&passwd.password,
-			&passwd.comment,
-			&passwd.group,
-		)
+func (db *DB) doSelect(query string, args ...interface{}) ([]*password, error) {
+	defer func() {
+		db.Conn.Close()
+		err := rmfile(db.Path)
 		if err != nil {
-			return nil, err
+			fmt.Println("failed to remove unencrypted database:", err)
 		}
+	}()
 
-		passwords = append(passwords, passwd)
-	}
-
-	return passwords, nil
-}
-
-func selectAll() ([]*password, error) {
-	decrypted, err := decrypt()
-	if err != nil {
-		return nil, err
-	}
-
-	conn, err := connect(decrypted)
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close()
-
-	rows, err := conn.Query("select * from passwords")
-
+	rows, err := db.Conn.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -226,6 +123,7 @@ func selectAll() ([]*password, error) {
 			&passwd.comment,
 			&passwd.group,
 		)
+
 		if err != nil {
 			return nil, err
 		}

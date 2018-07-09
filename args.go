@@ -73,25 +73,6 @@ func parseArgs() {
 		}
 
 		if name != "" && group == "" {
-			if name == "all" {
-				passwords, err := selectAll()
-				if err != nil {
-					fmt.Println("failed to get passwords")
-					return
-				}
-
-				if passwords == nil {
-					fmt.Println("no passwords found")
-					return
-				}
-
-				for _, p := range passwords {
-					fmt.Printf("%d | %s | %s | %s | %s | %s\n",
-						p.id, p.name, p.resource, p.username, p.group, p.comment)
-				}
-				return
-
-			}
 			passwd, err := selectByName(name)
 			if err != nil {
 				fmt.Println("failed to get password:", err)
@@ -102,19 +83,24 @@ func parseArgs() {
 				return
 			}
 
-			err = clipboard.WriteAll(passwd.password)
+			if len(passwd) > 1 {
+				printPaswords(passwd)
+				return
+			}
+
+			err = clipboard.WriteAll(passwd[0].password)
 			if err != nil {
 				fmt.Println("failed to copy password to the clipboard")
 			} else {
 				fmt.Println("password was copied to the clipboard!")
 			}
 
-			fmt.Println("URL:", passwd.resource)
-			fmt.Println("user:", passwd.username)
-			fmt.Println("group:", passwd.group)
+			fmt.Println("URL:", passwd[0].resource)
+			fmt.Println("user:", passwd[0].username)
+			fmt.Println("group:", passwd[0].group)
 
 			if open {
-				openURL(passwd.resource)
+				openURL(passwd[0].resource)
 			}
 		}
 
@@ -131,11 +117,7 @@ func parseArgs() {
 			}
 
 			fmt.Println("group:", group)
-
-			for _, p := range passwords {
-				fmt.Printf("%d | %s | %s | %s | %s\n",
-					p.id, p.name, p.resource, p.username, p.comment)
-			}
+			printPaswords(passwords)
 		}
 	}
 

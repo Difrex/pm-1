@@ -43,7 +43,7 @@ func generate(length int) string {
 }
 
 func addPassword(pass *password) error {
-	decrypted, err := decrypt()
+	db, err := decrypt()
 	if err != nil {
 		return err
 	}
@@ -51,30 +51,42 @@ func addPassword(pass *password) error {
 	query := `
 insert into passwords(name, resource, password, username, comment, 'group')
 values (?, ?, ?, ?, ?, ?)`
-	err = dbQuery(decrypted, query, pass.name, pass.resource, pass.password,
+	return db.doQuery(query, pass.name, pass.resource, pass.password,
 		pass.username, pass.comment, pass.group)
-	if err != nil {
-		return err
-	}
-
-	encrypt(decrypted)
-
-	return nil
-
 }
 
 func removePassword(id int) error {
-	decrypted, err := decrypt()
+	db, err := decrypt()
 	if err != nil {
 		return err
 	}
 
-	err = dbQuery(decrypted, "delete from passwords where id=?", id)
+	return db.doQuery("delete from passwords where id=?", id)
+}
+
+func selectByName(name string) ([]*password, error) {
+	db, err := decrypt()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	encrypt(decrypted)
+	query := "select id, name, username, resource, password" +
+		", comment, `group` from passwords where name=?"
+	if name == "all" {
+		query = "select id, name, username, resource, password" +
+			", comment, `group` from passwords"
+	}
 
-	return nil
+	return db.doSelect(query, name)
+}
+
+func selectByGroup(name string) ([]*password, error) {
+	db, err := decrypt()
+	if err != nil {
+		return nil, err
+	}
+
+	query := "select id, name, username, resource, password" +
+		", comment, `group` from passwords where `group`=?"
+	return db.doSelect(query, name)
 }
