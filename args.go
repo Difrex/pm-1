@@ -114,9 +114,8 @@ func parseArgs() {
 			fmt.Println("group:", group)
 
 			for _, p := range passwords {
-				fmt.Printf("%d | %s | %s | %s | %s | %s\n",
-					p.id, p.name, p.resource, p.password,
-					p.username, p.comment)
+				fmt.Printf("%d | %s | %s | %s | %s\n",
+					p.id, p.name, p.resource, p.username, p.comment)
 			}
 		}
 	}
