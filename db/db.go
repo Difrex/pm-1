@@ -1,10 +1,11 @@
-package main
+package db
 
 import (
 	"database/sql"
 	"fmt"
 	"os"
 
+	"github.com/himidori/pm/utils"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -24,28 +25,17 @@ func NewDB(path string) (*DB, error) {
 	return &DB{conn, path}, nil
 }
 
-func checkConfig() {
-	dbPath := os.Getenv("HOME") + "/.PM/db.sqlite"
-	if !pathExists(dbPath) {
-		err := initBase()
-		if err != nil {
-			fmt.Println("failed to initialize db:", err)
-		}
-		os.Exit(0)
-	}
-}
-
-func initBase() error {
+func InitBase() error {
 	pmDir := os.Getenv("HOME") + "/.PM"
 	fmt.Println("creating configuration directory...")
-	err := mkdir(pmDir)
+	err := utils.Mkdir(pmDir)
 	if err != nil {
 		return err
 	}
 
-	pass := generate(16)
-	dbFile := getPrefix() + pass
-	err = mkfile(dbFile)
+	pass := GeneratePassword(16)
+	dbFile := utils.GetPrefix() + pass
+	err = utils.Mkfile(dbFile)
 	if err != nil {
 		return err
 	}
@@ -99,10 +89,10 @@ func (db *DB) doQuery(query string, args ...interface{}) error {
 	return encrypt(db.Path)
 }
 
-func (db *DB) doSelect(query string, args ...interface{}) ([]*password, error) {
+func (db *DB) doSelect(query string, args ...interface{}) ([]*Password, error) {
 	defer func() {
 		db.Conn.Close()
-		err := rmfile(db.Path)
+		err := utils.Rmfile(db.Path)
 		if err != nil {
 			fmt.Println("failed to remove unencrypted database:", err)
 		}
@@ -114,17 +104,17 @@ func (db *DB) doSelect(query string, args ...interface{}) ([]*password, error) {
 	}
 	defer rows.Close()
 
-	var passwords []*password
+	var passwords []*Password
 	for rows.Next() {
-		passwd := &password{}
+		passwd := &Password{}
 		err = rows.Scan(
-			&passwd.id,
-			&passwd.name,
-			&passwd.username,
-			&passwd.resource,
-			&passwd.password,
-			&passwd.comment,
-			&passwd.group,
+			&passwd.Id,
+			&passwd.Name,
+			&passwd.Username,
+			&passwd.Resource,
+			&passwd.Password,
+			&passwd.Comment,
+			&passwd.Group,
 		)
 
 		if err != nil {

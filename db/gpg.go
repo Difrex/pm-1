@@ -1,4 +1,4 @@
-package main
+package db
 
 import (
 	"math/rand"
@@ -6,12 +6,13 @@ import (
 	"time"
 
 	"github.com/Difrex/gpg"
+	"github.com/himidori/pm/utils"
 )
 
 func encrypt(path string) error {
 	dbPath := os.Getenv("HOME") + "/.PM/db.sqlite"
-	if pathExists(dbPath) {
-		err := rmfile(dbPath)
+	if utils.PathExists(dbPath) {
+		err := utils.Rmfile(dbPath)
 		if err != nil {
 			return err
 		}
@@ -22,7 +23,7 @@ func encrypt(path string) error {
 		return err
 	}
 
-	return rmfile(path)
+	return utils.Rmfile(path)
 }
 
 func decrypt() (*DB, error) {
@@ -34,7 +35,7 @@ func decrypt() (*DB, error) {
 		name[i] = chars[rand.Intn(len(chars))]
 	}
 
-	path := getPrefix() + ".pm" + string(name)
+	path := utils.GetPrefix() + ".pm" + string(name)
 
 	err := gpg.DecryptFile(dbPath, path)
 	if err != nil {

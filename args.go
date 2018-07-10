@@ -5,6 +5,8 @@ import (
 
 	"github.com/atotto/clipboard"
 	"github.com/fatih/color"
+	"github.com/himidori/pm/db"
+	"github.com/himidori/pm/utils"
 	"github.com/ogier/pflag"
 )
 
@@ -74,7 +76,7 @@ func parseArgs() {
 		}
 
 		if name != "" && group == "" {
-			passwd, err := selectByName(name)
+			passwd, err := db.SelectByName(name)
 			if err != nil {
 				fmt.Println("failed to get password:", err)
 				return
@@ -85,11 +87,11 @@ func parseArgs() {
 			}
 
 			if len(passwd) > 1 {
-				printPaswords(passwd)
+				db.PrintPaswords(passwd)
 				return
 			}
 
-			err = clipboard.WriteAll(passwd[0].password)
+			err = clipboard.WriteAll(passwd[0].Password)
 			if err != nil {
 				fmt.Println("failed to copy password to the clipboard")
 			} else {
@@ -97,21 +99,21 @@ func parseArgs() {
 			}
 
 			fmt.Print("URL: ")
-			color.Blue(passwd[0].resource)
+			color.Blue(passwd[0].Resource)
 			fmt.Print("User: ")
-			color.Yellow(passwd[0].username)
-			if passwd[0].group != "" {
+			color.Yellow(passwd[0].Username)
+			if passwd[0].Group != "" {
 				fmt.Print("Group: ")
-				color.Magenta(passwd[0].group)
+				color.Magenta(passwd[0].Group)
 			}
 
 			if open {
-				openURL(passwd[0].resource)
+				utils.OpenURL(passwd[0].Resource)
 			}
 		}
 
 		if name == "" && group != "" {
-			passwords, err := selectByGroup(group)
+			passwords, err := db.SelectByGroup(group)
 			if err != nil {
 				fmt.Println("failed to get passwords:", err)
 				return
@@ -124,7 +126,7 @@ func parseArgs() {
 
 			fmt.Print("Group: ")
 			color.Magenta(group)
-			printPaswords(passwords)
+			db.PrintPaswords(passwords)
 		}
 	}
 
@@ -134,7 +136,7 @@ func parseArgs() {
 			return
 		}
 
-		err := removePassword(id)
+		err := db.RemovePassword(id)
 		if err != nil {
 			fmt.Println("failed to remove password:", err)
 			return
@@ -159,16 +161,16 @@ func parseArgs() {
 		if pass != "" {
 			passwd = pass
 		} else {
-			passwd = generate(16)
+			passwd = db.GeneratePassword(16)
 		}
 
-		err := addPassword(&password{
-			name:     name,
-			resource: link,
-			password: passwd,
-			username: user,
-			comment:  comment,
-			group:    group,
+		err := db.AddPassword(&db.Password{
+			Name:     name,
+			Resource: link,
+			Password: passwd,
+			Username: user,
+			Comment:  comment,
+			Group:    group,
 		})
 
 		if err != nil {
@@ -182,57 +184,57 @@ func parseArgs() {
 
 func addInteractive() {
 	fmt.Print("name: ")
-	name, err := readLine()
+	name, err := utils.ReadLine()
 	if err != nil {
 		fmt.Println("failed to read line:", err)
 		return
 	}
 
 	fmt.Print("resource: ")
-	resource, err := readLine()
+	resource, err := utils.ReadLine()
 	if err != nil {
 		fmt.Println("failed to read line:", err)
 		return
 	}
 
 	fmt.Print("password (leave empty to generate): ")
-	passwd, err := readLine()
+	passwd, err := utils.ReadLine()
 	if err != nil {
 		fmt.Println("failed to read line:", err)
 		return
 	}
 
 	fmt.Print("username: ")
-	username, err := readLine()
+	username, err := utils.ReadLine()
 	if err != nil {
 		fmt.Println("failed to read line:", err)
 		return
 	}
 
 	fmt.Print("comment: ")
-	comment, err := readLine()
+	comment, err := utils.ReadLine()
 	if err != nil {
 		fmt.Println("failed to read line:", err)
 		return
 	}
 
 	fmt.Print("group: ")
-	grp, err := readLine()
+	grp, err := utils.ReadLine()
 	if err != nil {
 		fmt.Println("failed to read line:", err)
 	}
 
 	if passwd == "" {
-		passwd = generate(16)
+		passwd = db.GeneratePassword(16)
 	}
 
-	err = addPassword(&password{
-		name:     name,
-		resource: resource,
-		password: passwd,
-		username: username,
-		comment:  comment,
-		group:    grp,
+	err = db.AddPassword(&db.Password{
+		Name:     name,
+		Resource: resource,
+		Password: passwd,
+		Username: username,
+		Comment:  comment,
+		Group:    grp,
 	})
 
 	if err != nil {
