@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/atotto/clipboard"
+	"github.com/fatih/color"
 	"github.com/ogier/pflag"
 )
 
@@ -95,9 +96,14 @@ func parseArgs() {
 				fmt.Println("password was copied to the clipboard!")
 			}
 
-			fmt.Println("URL:", passwd[0].resource)
-			fmt.Println("user:", passwd[0].username)
-			fmt.Println("group:", passwd[0].group)
+			fmt.Print("URL: ")
+			color.Blue(passwd[0].resource)
+			fmt.Print("User: ")
+			color.Yellow(passwd[0].username)
+			if passwd[0].group != "" {
+				fmt.Print("Group: ")
+				color.Magenta(passwd[0].group)
+			}
 
 			if open {
 				openURL(passwd[0].resource)
@@ -116,7 +122,8 @@ func parseArgs() {
 				return
 			}
 
-			fmt.Println("group:", group)
+			fmt.Print("Group: ")
+			color.Magenta(group)
 			printPaswords(passwords)
 		}
 	}
