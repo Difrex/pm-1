@@ -33,8 +33,7 @@ func InitBase() error {
 		return err
 	}
 
-	pass := GeneratePassword(16)
-	dbFile := utils.GetPrefix() + pass
+	dbFile := utils.GetPrefix() + utils.GenerateName()
 	err = utils.Mkfile(dbFile)
 	if err != nil {
 		return err
