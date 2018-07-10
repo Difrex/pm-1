@@ -3,10 +3,12 @@ package utils
 import (
 	"bufio"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/exec"
 	"runtime"
 	"strings"
+	"time"
 )
 
 func PathExists(path string) bool {
@@ -65,4 +67,15 @@ func ReadLine() (string, error) {
 	}
 
 	return strings.TrimSpace(line), nil
+}
+
+func GenerateName() string {
+	chars := "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	name := make([]byte, 10)
+	rand.Seed(time.Now().UnixNano())
+	for i := range name {
+		name[i] = chars[rand.Intn(len(chars))]
+	}
+
+	return string(name)
 }
