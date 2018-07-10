@@ -16,7 +16,7 @@ type DB struct {
 }
 
 // NewDB populate and return new *DB instance
-func NewDB(path string) (*DB, error) {
+func newDB(path string) (*DB, error) {
 	conn, err := sql.Open("sqlite3", path)
 	if err != nil {
 		return nil, err
@@ -40,7 +40,7 @@ func InitBase() error {
 		return err
 	}
 
-	db, err := NewDB(dbFile)
+	db, err := newDB(dbFile)
 	if err != nil {
 		return err
 	}

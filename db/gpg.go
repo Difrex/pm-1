@@ -42,5 +42,5 @@ func decrypt() (*DB, error) {
 		return nil, err
 	}
 
-	return NewDB(path)
+	return newDB(path)
 }
