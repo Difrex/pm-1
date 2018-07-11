@@ -21,12 +21,12 @@ func PathExists(path string) bool {
 	return true
 }
 
-// creating new directory
+// creating a new directory
 func Mkdir(path string) error {
 	return os.MkdirAll(path, 0755)
 }
 
-// creating new file
+// creating a new file
 func Mkfile(name string) error {
 	_, err := os.Create(name)
 	return err
