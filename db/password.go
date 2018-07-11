@@ -47,6 +47,18 @@ func RemovePassword(id int) error {
 	return db.doQuery("delete from passwords where id=?", id)
 }
 
+// method used for fetching
+// all passwords stored in the DB
+func SelectAll() ([]*Password, error) {
+	db, err := decrypt()
+	if err != nil {
+		return nil, err
+	}
+
+	return db.doSelect("select id, name, username, resource, password" +
+		", comment, 'group' from passwords")
+}
+
 // method used for selecting passwords
 // when the -n flag is provided
 func SelectByName(name string) ([]*Password, error) {
@@ -55,13 +67,12 @@ func SelectByName(name string) ([]*Password, error) {
 		return nil, err
 	}
 
-	query := "select id, name, username, resource, password" +
-		", comment, `group` from passwords where name=?"
 	if name == "all" {
-		query = "select id, name, username, resource, password" +
-			", comment, `group` from passwords"
+		return SelectAll()
 	}
 
+	query := "select id, name, username, resource, password" +
+		", comment, `group` from passwords where name=?"
 	return db.doSelect(query, name)
 }
 
