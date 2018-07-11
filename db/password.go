@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+// Password struct
+// holds every database field
 type Password struct {
 	Id       int
 	Name     string
@@ -19,6 +21,8 @@ type Password struct {
 	Group    string
 }
 
+// method used for inserting a new password
+// into the database
 func AddPassword(pass *Password) error {
 	db, err := decrypt()
 	if err != nil {
@@ -32,6 +36,8 @@ values (?, ?, ?, ?, ?, ?)`
 		pass.Username, pass.Comment, pass.Group)
 }
 
+// method used for removing a password
+// from the database
 func RemovePassword(id int) error {
 	db, err := decrypt()
 	if err != nil {
@@ -41,6 +47,8 @@ func RemovePassword(id int) error {
 	return db.doQuery("delete from passwords where id=?", id)
 }
 
+// method used for selecting passwords
+// when the -n flag is provided
 func SelectByName(name string) ([]*Password, error) {
 	db, err := decrypt()
 	if err != nil {
@@ -57,6 +65,8 @@ func SelectByName(name string) ([]*Password, error) {
 	return db.doSelect(query, name)
 }
 
+// method used for selecting passwords
+// when the -g flag is provided
 func SelectByGroup(name string) ([]*Password, error) {
 	db, err := decrypt()
 	if err != nil {
@@ -68,6 +78,8 @@ func SelectByGroup(name string) ([]*Password, error) {
 	return db.doSelect(query, name)
 }
 
+// method used for generating a password
+// of given length
 func GeneratePassword(length int) string {
 	bytes, _ := exec.Command("head", "-c4096", "/dev/urandom").Output()
 	hash := fmt.Sprintf("%x", md5.Sum(bytes))
@@ -89,6 +101,7 @@ func GeneratePassword(length int) string {
 	return string(outStr)
 }
 
+// method used for printing a passwords array
 func PrintPaswords(passwords []*Password) {
 	for _, p := range passwords {
 		fmt.Printf("%d | %s | %s | %s | %s\n",

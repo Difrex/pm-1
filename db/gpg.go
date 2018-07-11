@@ -7,6 +7,8 @@ import (
 	"github.com/himidori/pm/utils"
 )
 
+// encrypting a unencrypted database with a
+// GPG public key
 func encrypt(path string) error {
 	dbPath := os.Getenv("HOME") + "/.PM/db.sqlite"
 	if utils.PathExists(dbPath) {
@@ -21,9 +23,12 @@ func encrypt(path string) error {
 		return err
 	}
 
+	// deleting the unencrypted database file
 	return utils.Rmfile(path)
 }
 
+// decrypting a GPG ecrypted database
+// and returning a new DB struct
 func decrypt() (*DB, error) {
 	dbPath := os.Getenv("HOME") + "/.PM/db.sqlite"
 	path := utils.GetPrefix() + ".pm" + utils.GenerateName()

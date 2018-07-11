@@ -9,13 +9,18 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-// DB implement database struct
+// Database struct
+// holds a path to the base and
+// an open connection
 type DB struct {
 	Conn *sql.DB
 	Path string
 }
 
-// NewDB populate and return new *DB instance
+// opening a connection to the DB
+// at provided path and
+// returning a new struct instance with
+// an opened connection if no errors occured
 func newDB(path string) (*DB, error) {
 	conn, err := sql.Open("sqlite3", path)
 	if err != nil {
@@ -25,6 +30,8 @@ func newDB(path string) (*DB, error) {
 	return &DB{conn, path}, nil
 }
 
+// method used for creating directories and a DB file
+// on the first run of PM
 func InitBase() error {
 	pmDir := os.Getenv("HOME") + "/.PM"
 	fmt.Println("creating configuration directory...")
@@ -65,6 +72,8 @@ comment TEXT NOT NULL,
 	return encrypt(dbFile)
 }
 
+// method used for performing INSERT / REMOVE / DELETE
+// queries on a database
 func (db *DB) doQuery(query string, args ...interface{}) error {
 	defer db.Conn.Close()
 
@@ -88,6 +97,7 @@ func (db *DB) doQuery(query string, args ...interface{}) error {
 	return encrypt(db.Path)
 }
 
+// method used for performing SELECT queries on a database
 func (db *DB) doSelect(query string, args ...interface{}) ([]*Password, error) {
 	defer func() {
 		db.Conn.Close()
