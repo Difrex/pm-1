@@ -7,7 +7,7 @@ import (
 	"github.com/himidori/pm/utils"
 )
 
-// encrypting a unencrypted database with a
+// encrypting an unencrypted database with a
 // GPG public key
 func encrypt(path string) error {
 	dbPath := os.Getenv("HOME") + "/.PM/db.sqlite"
