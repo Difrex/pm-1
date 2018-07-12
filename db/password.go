@@ -89,6 +89,20 @@ func SelectByGroup(name string) ([]*Password, error) {
 	return db.doSelect(query, name)
 }
 
+// method used for selecting password
+// when both -n and -g flags are provided
+func SelectByGroupAndName(name string, group string) ([]*Password, error) {
+	db, err := decrypt()
+	if err != nil {
+		return nil, err
+	}
+
+	query := "select id, name, username, resource, password" +
+		", comment, `group` from passwords where name=?" +
+		" and `group`=?"
+	return db.doSelect(query, name, group)
+}
+
 // method used for generating a password
 // of given length
 func GeneratePassword(length int) string {
