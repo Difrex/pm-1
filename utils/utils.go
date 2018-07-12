@@ -9,6 +9,8 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/ctcpip/notifize"
 )
 
 // checking if a directory or file exists
@@ -66,11 +68,8 @@ func OpenURL(url string) {
 	}
 }
 
-func Notify(text string) {
-	_, err := exec.Command("notify-send", "-a", "pm", text).Output()
-	if err != nil {
-		fmt.Println("failed to send notify:", err)
-	}
+func Notify(summary, body string) {
+	notifize.Display(summary, body, false, "")
 }
 
 // reading a line from stdin
