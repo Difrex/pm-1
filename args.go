@@ -261,10 +261,18 @@ func parseArgs() {
 				fmt.Println("password was copied to the clipboard!")
 			}
 
+			fmt.Print("URL: ")
+			color.Blue(passwords[0].Resource)
+			fmt.Print("User: ")
+			color.Yellow(passwords[0].Username)
+			if passwords[0].Group != "" {
+				fmt.Print("Group: ")
+				color.Magenta(passwords[0].Group)
+			}
+
 			if open {
 				utils.OpenURL(passwords[0].Resource)
 			}
-
 		}
 	}
 
