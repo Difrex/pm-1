@@ -72,6 +72,25 @@ func Notify(summary, body string) {
 	notifize.Display(summary, body, false, "")
 }
 
+func IsIntalled(name string) (bool, error) {
+	out, err := exec.Command("whereis", name).Output()
+	if err != nil {
+		return false, err
+	}
+
+	data := strings.Split(string(out), ":")
+	return len(data[1]) > 1, nil
+}
+
+func ShowMenu(name string, passwords string) (string, error) {
+	out, err := exec.Command("bash", "-c", "echo '"+passwords+"' | "+name).Output()
+	if err != nil {
+		return "", err
+	}
+
+	return strings.TrimSpace(string(out)), nil
+}
+
 // reading a line from stdin
 func ReadLine() (string, error) {
 	reader := bufio.NewReader(os.Stdin)

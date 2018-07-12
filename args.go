@@ -71,13 +71,13 @@ func initArgs() {
 
 func parseArgs() {
 	if menu {
-		ok, err := utils.IsDmenuInstalled()
+		ok, err := utils.IsIntalled("dmenu")
 		if err != nil {
 			fmt.Println("failed to check dmenu installation:", err)
 			return
 		}
 		if !ok {
-			fmt.Println("dmenu is not installed", err)
+			fmt.Println("dmenu is not installed")
 			return
 		}
 
@@ -86,17 +86,19 @@ func parseArgs() {
 			fmt.Println("failed to fetch passwords:", err)
 			return
 		}
-
 		if passwords == nil {
 			fmt.Println("no passwords found")
-			return
 		}
 
 		str := ""
 		for _, p := range passwords {
 			str += p.Name + "\n"
 		}
-		res := utils.DmenuShow(str)
+		res, err := utils.ShowMenu("dmenu", str)
+		if err != nil {
+			fmt.Println("failed to show menu:", err)
+			return
+		}
 		if res == "" {
 			return
 		}
@@ -112,15 +114,15 @@ func parseArgs() {
 				return
 			}
 		}
+
 	}
 
 	if rofi {
-		ok, err := utils.IsRofiInstalled()
+		ok, err := utils.IsIntalled("rofi")
 		if err != nil {
-			fmt.Println("failed to check rofi installation")
+			fmt.Println("failed to check rofi installation:", err)
 			return
 		}
-
 		if !ok {
 			fmt.Println("rofi is not installed")
 			return
@@ -132,14 +134,23 @@ func parseArgs() {
 			return
 		}
 
+		if passwords == nil {
+			fmt.Println("no passwords found")
+		}
+
 		str := ""
 		for _, p := range passwords {
 			str += p.Name + "\n"
 		}
-		res := utils.RofiShow(str)
+		res, err := utils.ShowMenu("rofi -dmenu", str)
+		if err != nil {
+			fmt.Println("failed to show menu:", err)
+			return
+		}
 		if res == "" {
 			return
 		}
+
 		for _, p := range passwords {
 			if p.Name == res {
 				err = clipboard.WriteAll(p.Password)
