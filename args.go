@@ -163,9 +163,15 @@ func parseArgs() {
 			return
 		}
 
-		res = strings.Fields(res)[0]
+		fields := strings.Fields(res)
+		n := fields[0]
+		g := ""
+		if len(fields) == 3 {
+			g = fields[1]
+		}
+
 		for _, p := range passwords {
-			if p.Name == res {
+			if p.Name == n && p.Group == g {
 				err = clipboard.WriteAll(p.Password)
 				if err != nil {
 					utils.Notify(p.Name, "failed to copy password to the clipboard")
