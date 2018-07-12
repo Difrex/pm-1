@@ -66,6 +66,13 @@ func OpenURL(url string) {
 	}
 }
 
+func Notify(text string) {
+	_, err := exec.Command("notify-send", "-a", "pm", text).Output()
+	if err != nil {
+		fmt.Println("failed to send notify:", err)
+	}
+}
+
 // reading a line from stdin
 func ReadLine() (string, error) {
 	reader := bufio.NewReader(os.Stdin)

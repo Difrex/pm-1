@@ -1,32 +1,33 @@
 package main
 
 import (
-	"fmt"
+    "fmt"
 
-	"github.com/atotto/clipboard"
-	"github.com/fatih/color"
-	"github.com/himidori/pm/db"
-	"github.com/himidori/pm/utils"
-	"github.com/ogier/pflag"
+    "github.com/atotto/clipboard"
+    "github.com/fatih/color"
+    "github.com/himidori/pm/db"
+    "github.com/himidori/pm/utils"
+    "github.com/ogier/pflag"
 )
 
 var (
-	show        bool
-	name        string
-	group       string
-	new         bool
-	link        string
-	user        string
-	comment     string
-	pass        string
-	remove      bool
-	id          int
-	open        bool
-	interactive bool
+    show        bool
+    name        string
+    group       string
+    new         bool
+    link        string
+    user        string
+    comment     string
+    pass        string
+    remove      bool
+    id          int
+    open        bool
+    interactive bool
+    menu        bool
 )
 
 func printUsage() {
-	fmt.Println(`Simple password manager written in Go
+    fmt.Println(`Simple password manager written in Go
 
 -s                      show password
 -n [Name of resource]   name of resource
@@ -42,205 +43,251 @@ func printUsage() {
 -i                      password ID
 -o                      open link
 -I                      interactive mode for adding new password
+-m                      show dmenu
 -h                      show help`)
 }
 
 func initArgs() {
-	pflag.BoolVarP(&show, "show", "s", false, "show password")
-	pflag.StringVarP(&name, "name", "n", "", "name of the resource")
-	pflag.StringVarP(&group, "group", "g", "", "name of the group")
-	pflag.BoolVarP(&new, "write", "w", false, "add new password")
-	pflag.StringVarP(&link, "link", "l", "", "link to the resource")
-	pflag.StringVarP(&user, "user", "u", "", "username of the resource")
-	pflag.StringVarP(&comment, "comment", "c", "", "comment")
-	pflag.StringVarP(&pass, "password", "p", "", "password")
-	pflag.BoolVarP(&remove, "remove", "r", false, "remove password")
-	pflag.IntVarP(&id, "id", "i", -1, "password id")
-	pflag.BoolVarP(&open, "open", "o", false, "open link in browser")
-	pflag.BoolVarP(&interactive, "interactive", "I", false, "interactive mode")
-	pflag.Usage = printUsage
+    pflag.BoolVarP(&show, "show", "s", false, "show password")
+    pflag.StringVarP(&name, "name", "n", "", "name of the resource")
+    pflag.StringVarP(&group, "group", "g", "", "name of the group")
+    pflag.BoolVarP(&new, "write", "w", false, "add new password")
+    pflag.StringVarP(&link, "link", "l", "", "link to the resource")
+    pflag.StringVarP(&user, "user", "u", "", "username of the resource")
+    pflag.StringVarP(&comment, "comment", "c", "", "comment")
+    pflag.StringVarP(&pass, "password", "p", "", "password")
+    pflag.BoolVarP(&remove, "remove", "r", false, "remove password")
+    pflag.IntVarP(&id, "id", "i", -1, "password id")
+    pflag.BoolVarP(&open, "open", "o", false, "open link in browser")
+    pflag.BoolVarP(&interactive, "interactive", "I", false, "interactive mode")
+    pflag.BoolVarP(&menu, "menu", "m", false, "show dmenu")
+    pflag.Usage = printUsage
 
-	pflag.Parse()
+    pflag.Parse()
 }
 
 func parseArgs() {
-	if !show && !new && !remove {
-		printUsage()
-		return
-	}
+    if menu {
+        ok, err := utils.IsDmenuInstalled()
+        if err != nil {
+            fmt.Println("failed to check dmenu installation:", err)
+            return
+        }
+        if !ok {
+            fmt.Println("dmenu is not installed", err)
+            return
+        }
 
-	if show {
-		if name == "" && group == "" {
-			printUsage()
-			return
-		}
+        passwords, err := db.SelectAll()
+        if err != nil {
+            fmt.Println("failed to fetch passwords:", err)
+            return
+        }
 
-		if name != "" && group == "" {
-			passwd, err := db.SelectByName(name)
-			if err != nil {
-				fmt.Println("failed to get password:", err)
-				return
-			}
-			if passwd == nil {
-				fmt.Println("no password found for name", name)
-				return
-			}
+        if passwords == nil {
+            fmt.Println("no passwords found")
+            return
+        }
 
-			if len(passwd) > 1 {
-				db.PrintPaswords(passwd)
-				return
-			}
+        str := ""
+        for _, p := range passwords {
+            str += p.Name + "\n"
+        }
+        res := utils.DmenuShow(str)
+        if res == "" {
+            return
+        }
 
-			err = clipboard.WriteAll(passwd[0].Password)
-			if err != nil {
-				fmt.Println("failed to copy password to the clipboard")
-			} else {
-				fmt.Println("password was copied to the clipboard!")
-			}
+        for _, p := range passwords {
+            if p.Name == res {
+                err = clipboard.WriteAll(p.Password)
+                if err != nil {
+                    utils.Notify("failed to copy password to the clipboard")
+                }
+                utils.Notify("copied password to the clipboard!")
 
-			fmt.Print("URL: ")
-			color.Blue(passwd[0].Resource)
-			fmt.Print("User: ")
-			color.Yellow(passwd[0].Username)
-			if passwd[0].Group != "" {
-				fmt.Print("Group: ")
-				color.Magenta(passwd[0].Group)
-			}
+                return
+            }
+        }
+    }
 
-			if open {
-				utils.OpenURL(passwd[0].Resource)
-			}
-		}
+    if !show && !new && !remove {
+        printUsage()
+        return
+    }
 
-		if name == "" && group != "" {
-			passwords, err := db.SelectByGroup(group)
-			if err != nil {
-				fmt.Println("failed to get passwords:", err)
-				return
-			}
+    if show {
+        if name == "" && group == "" {
+            printUsage()
+            return
+        }
 
-			if passwords == nil {
-				fmt.Println("no passwords found for group", group)
-				return
-			}
+        if name != "" && group == "" {
+            passwd, err := db.SelectByName(name)
+            if err != nil {
+                fmt.Println("failed to get password:", err)
+                return
+            }
+            if passwd == nil {
+                fmt.Println("no password found for name", name)
+                return
+            }
 
-			fmt.Print("Group: ")
-			color.Magenta(group)
-			db.PrintPaswords(passwords)
-		}
-	}
+            if len(passwd) > 1 {
+                db.PrintPaswords(passwd)
+                return
+            }
 
-	if remove {
-		if id == -1 {
-			printUsage()
-			return
-		}
+            err = clipboard.WriteAll(passwd[0].Password)
+            if err != nil {
+                fmt.Println("failed to copy password to the clipboard")
+            } else {
+                fmt.Println("password was copied to the clipboard!")
+            }
 
-		err := db.RemovePassword(id)
-		if err != nil {
-			fmt.Println("failed to remove password:", err)
-			return
-		}
+            fmt.Print("URL: ")
+            color.Blue(passwd[0].Resource)
+            fmt.Print("User: ")
+            color.Yellow(passwd[0].Username)
+            if passwd[0].Group != "" {
+                fmt.Print("Group: ")
+                color.Magenta(passwd[0].Group)
+            }
 
-		fmt.Println("successfuly removed password with id", id)
-	}
+            if open {
+                utils.OpenURL(passwd[0].Resource)
+            }
+        }
 
-	if new {
-		if interactive {
-			addInteractive()
-			return
-		}
+        if name == "" && group != "" {
+            passwords, err := db.SelectByGroup(group)
+            if err != nil {
+                fmt.Println("failed to get passwords:", err)
+                return
+            }
 
-		if name == "" || link == "" {
-			printUsage()
-			return
-		}
+            if passwords == nil {
+                fmt.Println("no passwords found for group", group)
+                return
+            }
 
-		passwd := ""
+            fmt.Print("Group: ")
+            color.Magenta(group)
+            db.PrintPaswords(passwords)
+        }
+    }
 
-		if pass != "" {
-			passwd = pass
-		} else {
-			passwd = db.GeneratePassword(16)
-		}
+    if remove {
+        if id == -1 {
+            printUsage()
+            return
+        }
 
-		err := db.AddPassword(&db.Password{
-			Name:     name,
-			Resource: link,
-			Password: passwd,
-			Username: user,
-			Comment:  comment,
-			Group:    group,
-		})
+        err := db.RemovePassword(id)
+        if err != nil {
+            fmt.Println("failed to remove password:", err)
+            return
+        }
 
-		if err != nil {
-			fmt.Println("failed to add password:", err)
-			return
-		}
+        fmt.Println("successfuly removed password with id", id)
+    }
 
-		fmt.Println("successfuly added new password!")
-	}
+    if new {
+        if interactive {
+            addInteractive()
+            return
+        }
+
+        if name == "" || link == "" {
+            printUsage()
+            return
+        }
+
+        passwd := ""
+
+        if pass != "" {
+            passwd = pass
+        } else {
+            passwd = db.GeneratePassword(16)
+        }
+
+        err := db.AddPassword(&db.Password{
+            Name:     name,
+            Resource: link,
+            Password: passwd,
+            Username: user,
+            Comment:  comment,
+            Group:    group,
+        })
+
+        if err != nil {
+            fmt.Println("failed to add password:", err)
+            return
+        }
+
+        fmt.Println("successfuly added new password!")
+    }
 }
 
 func addInteractive() {
-	fmt.Print("name: ")
-	name, err := utils.ReadLine()
-	if err != nil {
-		fmt.Println("failed to read line:", err)
-		return
-	}
+    fmt.Print("name: ")
+    name, err := utils.ReadLine()
+    if err != nil {
+        fmt.Println("failed to read line:", err)
+        return
+    }
 
-	fmt.Print("resource: ")
-	resource, err := utils.ReadLine()
-	if err != nil {
-		fmt.Println("failed to read line:", err)
-		return
-	}
+    fmt.Print("resource: ")
+    resource, err := utils.ReadLine()
+    if err != nil {
+        fmt.Println("failed to read line:", err)
+        return
+    }
 
-	fmt.Print("password (leave empty to generate): ")
-	passwd, err := utils.ReadLine()
-	if err != nil {
-		fmt.Println("failed to read line:", err)
-		return
-	}
+    fmt.Print("password (leave empty to generate): ")
+    passwd, err := utils.ReadLine()
+    if err != nil {
+        fmt.Println("failed to read line:", err)
+        return
+    }
 
-	fmt.Print("username: ")
-	username, err := utils.ReadLine()
-	if err != nil {
-		fmt.Println("failed to read line:", err)
-		return
-	}
+    fmt.Print("username: ")
+    username, err := utils.ReadLine()
+    if err != nil {
+        fmt.Println("failed to read line:", err)
+        return
+    }
 
-	fmt.Print("comment: ")
-	comment, err := utils.ReadLine()
-	if err != nil {
-		fmt.Println("failed to read line:", err)
-		return
-	}
+    fmt.Print("comment: ")
+    comment, err := utils.ReadLine()
+    if err != nil {
+        fmt.Println("failed to read line:", err)
+        return
+    }
 
-	fmt.Print("group: ")
-	grp, err := utils.ReadLine()
-	if err != nil {
-		fmt.Println("failed to read line:", err)
-	}
+    fmt.Print("group: ")
+    grp, err := utils.ReadLine()
+    if err != nil {
+        fmt.Println("failed to read line:", err)
+    }
 
-	if passwd == "" {
-		passwd = db.GeneratePassword(16)
-	}
+    if passwd == "" {
+        passwd = db.GeneratePassword(16)
+    }
 
-	err = db.AddPassword(&db.Password{
-		Name:     name,
-		Resource: resource,
-		Password: passwd,
-		Username: username,
-		Comment:  comment,
-		Group:    grp,
-	})
+    err = db.AddPassword(&db.Password{
+        Name:     name,
+        Resource: resource,
+        Password: passwd,
+        Username: username,
+        Comment:  comment,
+        Group:    grp,
+    })
 
-	if err != nil {
-		fmt.Println("failed to add password:", err)
-		return
-	}
+    if err != nil {
+        fmt.Println("failed to add password:", err)
+        return
+    }
 
-	fmt.Println("successfuly added password to the database!")
+    fmt.Println("successfuly added password to the database!")
 }
