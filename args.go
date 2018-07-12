@@ -261,6 +261,10 @@ func parseArgs() {
 				fmt.Println("password was copied to the clipboard!")
 			}
 
+			if open {
+				utils.OpenURL(passwords[0].Resource)
+			}
+
 		}
 	}
 
