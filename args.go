@@ -141,10 +141,18 @@ func parseArgs() {
 		}
 
 		str := ""
+		longestName := getLongestNameField(passwords)
+		longestGroup := getLongestGroupField(passwords)
 		for _, p := range passwords {
-			str += p.Name + "|" + p.Group + "|" + p.Resource + "\n"
+			nameSpaces := longestName - len(p.Name) + 1
+			groupSpaces := longestGroup - len(p.Group) + 1
+			str += p.Name +
+				strings.Repeat(" ", nameSpaces) +
+				p.Group +
+				strings.Repeat(" ", groupSpaces) +
+				p.Resource + "\n"
 		}
-		res, err := utils.ShowMenu("rofi -dmenu", str)
+		res, err := utils.ShowMenu("rofi", str)
 		if err != nil {
 			fmt.Println("failed to show menu:", err)
 			return
@@ -153,7 +161,7 @@ func parseArgs() {
 			return
 		}
 
-		res = strings.Split(res, "|")[0]
+		res = strings.Fields(res)[0]
 		for _, p := range passwords {
 			if p.Name == res {
 				err = clipboard.WriteAll(p.Password)
@@ -367,4 +375,37 @@ func addInteractive() {
 	}
 
 	fmt.Println("successfuly added password to the database!")
+}
+
+// getLongestNameField return int with length of name
+func getLongestNameField(passwords []*db.Password) int {
+	counter := 0
+	for i := range passwords {
+		if len(passwords[i].Name) > counter {
+			counter = len(passwords[i].Name)
+		}
+	}
+	return counter
+}
+
+// getLongestGroupField return int with length of group
+func getLongestGroupField(passwords []*db.Password) int {
+	counter := 0
+	for i := range passwords {
+		if len(passwords[i].Group) > counter {
+			counter = len(passwords[i].Group)
+		}
+	}
+	return counter
+}
+
+// getLongestResourceField return int with length of resource
+func getLongestResourceField(passwords []*db.Password) int {
+	counter := 0
+	for i := range passwords {
+		if len(passwords[i].Resource) > counter {
+			counter = len(passwords[i].Resource)
+		}
+	}
+	return counter
 }
