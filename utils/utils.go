@@ -10,6 +10,10 @@ import (
 	"strings"
 	"time"
 
+	"bytes"
+
+	"errors"
+
 	"github.com/ctcpip/notifize"
 )
 
@@ -83,12 +87,28 @@ func IsIntalled(name string) (bool, error) {
 }
 
 func ShowMenu(name string, passwords string) (string, error) {
-	out, err := exec.Command("bash", "-c", "echo '"+passwords+"' | "+name).Output()
+	var stdout bytes.Buffer
+	stdin := strings.NewReader(passwords)
+
+	var cmd *exec.Cmd
+	if name == "dmenu" {
+		cmd = exec.Command("dmenu")
+	} else if name == "rofi" {
+		cmd = exec.Command("rofi", "-dmenu")
+	} else {
+		e := errors.New("Invalid command: " + name)
+		return "", e
+	}
+
+	cmd.Stdin = stdin
+	cmd.Stdout = &stdout
+
+	err := cmd.Run()
 	if err != nil {
 		return "", err
 	}
 
-	return strings.TrimSpace(string(out)), nil
+	return strings.TrimSpace(stdout.String()), nil
 }
 
 // reading a line from stdin
