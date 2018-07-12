@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/atotto/clipboard"
 	"github.com/fatih/color"
@@ -92,7 +93,7 @@ func parseArgs() {
 
 		str := ""
 		for _, p := range passwords {
-			str += p.Name + "\n"
+			str += p.Name + "|" + p.Group + "|" + p.Resource + "\n"
 		}
 		res, err := utils.ShowMenu("dmenu", str)
 		if err != nil {
@@ -103,6 +104,7 @@ func parseArgs() {
 			return
 		}
 
+		res = strings.Split(res, "|")[0]
 		for _, p := range passwords {
 			if p.Name == res {
 				err = clipboard.WriteAll(p.Password)
@@ -140,7 +142,7 @@ func parseArgs() {
 
 		str := ""
 		for _, p := range passwords {
-			str += p.Name + "\n"
+			str += p.Name + "|" + p.Group + "|" + p.Resource + "\n"
 		}
 		res, err := utils.ShowMenu("rofi -dmenu", str)
 		if err != nil {
@@ -151,6 +153,7 @@ func parseArgs() {
 			return
 		}
 
+		res = strings.Split(res, "|")[0]
 		for _, p := range passwords {
 			if p.Name == res {
 				err = clipboard.WriteAll(p.Password)
