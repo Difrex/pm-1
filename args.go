@@ -105,9 +105,9 @@ func parseArgs() {
 			if p.Name == res {
 				err = clipboard.WriteAll(p.Password)
 				if err != nil {
-					utils.Notify("failed to copy password to the clipboard")
+					utils.Notify(p.Name, "failed to copy password to the clipboard")
 				}
-				utils.Notify("copied password to the clipboard!")
+				utils.Notify(p.Name, "copied password to the clipboard!")
 
 				return
 			}
@@ -144,9 +144,9 @@ func parseArgs() {
 			if p.Name == res {
 				err = clipboard.WriteAll(p.Password)
 				if err != nil {
-					utils.Notify("failed to copy password to the clipboard")
+					utils.Notify(p.Name, "failed to copy password to the clipboard")
 				}
-				utils.Notify("copied password to the clipboard!")
+				utils.Notify(p.Name, "copied password to the clipboard!")
 
 				return
 			}
