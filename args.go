@@ -89,6 +89,7 @@ func parseArgs() {
 		}
 		if passwords == nil {
 			fmt.Println("no passwords found")
+			return
 		}
 
 		str := ""
@@ -138,6 +139,7 @@ func parseArgs() {
 
 		if passwords == nil {
 			fmt.Println("no passwords found")
+			return
 		}
 
 		str := ""
