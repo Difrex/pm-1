@@ -56,7 +56,7 @@ func SelectAll() ([]*Password, error) {
 	}
 
 	return db.doSelect("select id, name, username, resource, password" +
-		", comment, `group` from passwords")
+		", comment, `group` from passwords order by `group`")
 }
 
 // method used for selecting passwords
