@@ -54,7 +54,8 @@ func GetPrefix() string {
 
 // opening a URL in the browser
 func OpenURL(url string) {
-	if !strings.HasPrefix(url, "http://") {
+	if !strings.HasPrefix(url, "http://") &&
+		!strings.HasPrefix(url, "https://") {
 		url = "http://" + url
 	}
 
