@@ -231,6 +231,27 @@ func parseArgs() {
 			color.Magenta(group)
 			db.PrintPaswords(passwords)
 		}
+
+		if name != "" && group != "" {
+			passwords, err := db.SelectByGroupAndName(name, group)
+			if err != nil {
+				fmt.Println("failed to get passwords:", err)
+				return
+			}
+
+			if passwords == nil {
+				fmt.Println("no password found")
+				return
+			}
+
+			err = clipboard.WriteAll(passwords[0].Password)
+			if err != nil {
+				fmt.Println("failed to copy password to the clipboard")
+			} else {
+				fmt.Println("password was copied to the clipboard!")
+			}
+
+		}
 	}
 
 	if remove {

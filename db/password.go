@@ -100,7 +100,7 @@ func SelectByGroupAndName(name string, group string) ([]*Password, error) {
 	query := "select id, name, username, resource, password" +
 		", comment, `group` from passwords where name=?" +
 		" and `group`=?"
-	return db.doSelect(query, name, group)
+	return db.doSelect(query, name, groua)
 }
 
 // method used for generating a password
