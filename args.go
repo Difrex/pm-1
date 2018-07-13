@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/atotto/clipboard"
@@ -26,6 +27,7 @@ var (
 	interactive bool
 	menu        bool
 	rofi        bool
+	table       bool
 )
 
 func printUsage() {
@@ -47,6 +49,7 @@ func printUsage() {
 -I                      interactive mode for adding new password
 -m                      show dmenu
 -R                      show rofi
+-t                      print passwords table
 -h                      show help`)
 }
 
@@ -65,6 +68,7 @@ func initArgs() {
 	pflag.BoolVarP(&interactive, "interactive", "I", false, "interactive mode")
 	pflag.BoolVarP(&menu, "menu", "m", false, "show dmenu")
 	pflag.BoolVarP(&rofi, "rofi", "R", false, "show rofi")
+	pflag.BoolVarP(&table, "table", "t", false, "print passwords table")
 	pflag.Usage = printUsage
 
 	pflag.Parse()
@@ -94,7 +98,11 @@ func parseArgs() {
 
 		str := ""
 		for _, p := range passwords {
-			str += p.Name + "|" + p.Group + "|" + p.Resource + "\n"
+			str += p.Name + "|"
+			if p.Group != "" {
+				str += p.Group + "|"
+			}
+			str += p.Resource + "\n"
 		}
 		res, err := utils.ShowMenu("dmenu", str)
 		if err != nil {
@@ -105,9 +113,15 @@ func parseArgs() {
 			return
 		}
 
-		res = strings.Split(res, "|")[0]
+		data := strings.Split(res, "|")
+		n := strings.Split(res, "|")[0]
+		g := ""
+		if len(data) == 3 {
+			g = data[1]
+		}
+		fmt.Println(g)
 		for _, p := range passwords {
-			if p.Name == res {
+			if p.Name == n && p.Group == g {
 				err = clipboard.WriteAll(p.Password)
 				if err != nil {
 					utils.Notify(p.Name, "failed to copy password to the clipboard")
@@ -206,7 +220,39 @@ func parseArgs() {
 			}
 
 			if len(passwd) > 1 {
-				db.PrintPaswords(passwd)
+				if table {
+					longestName := getLongestNameField(passwd)
+					longestResource := getLongestResourceField(passwd)
+					longestUsername := getLongestUsernameField(passwd)
+					longestGroup := getLongestGroupField(passwd)
+					fmt.Println()
+					fmt.Println("id" +
+						" name" + strings.Repeat(" ", longestName-4) +
+						" resource" + strings.Repeat(" ", longestResource-8) +
+						" username" + strings.Repeat(" ", longestUsername-8) +
+						" group" + strings.Repeat(" ", longestGroup-5) +
+						" comment",
+					)
+					fmt.Println()
+					for _, p := range passwd {
+						nameSpaces := longestName - len(p.Name) + 1
+						resourceSpaces := longestResource - len(p.Resource) + 1
+						usernameSpaces := longestUsername - len(p.Username) + 1
+						groupSpaces := longestGroup - len(p.Group) + 1
+
+						fmt.Println(strconv.Itoa(p.Id) + "  " +
+							p.Name + strings.Repeat(" ", nameSpaces) +
+							p.Resource + strings.Repeat(" ", resourceSpaces) +
+							p.Username + strings.Repeat(" ", usernameSpaces) +
+							p.Group + strings.Repeat(" ", groupSpaces) +
+							p.Comment,
+						)
+					}
+					fmt.Println()
+
+				} else {
+					db.PrintPaswords(passwd)
+				}
 				return
 			}
 
@@ -425,6 +471,16 @@ func getLongestResourceField(passwords []*db.Password) int {
 	for i := range passwords {
 		if len(passwords[i].Resource) > counter {
 			counter = len(passwords[i].Resource)
+		}
+	}
+	return counter
+}
+
+func getLongestUsernameField(passwords []*db.Password) int {
+	counter := 0
+	for i := range passwords {
+		if len(passwords[i].Username) > counter {
+			counter = len(passwords[i].Username)
 		}
 	}
 	return counter
