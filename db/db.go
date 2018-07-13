@@ -72,7 +72,7 @@ comment TEXT NOT NULL,
 	return encrypt(dbFile)
 }
 
-// method used for performing INSERT / REMOVE / DELETE
+// method used for performing INSERT / DELETE / UPDATE
 // queries on a database
 func (db *DB) doQuery(query string, args ...interface{}) error {
 	defer db.Conn.Close()
