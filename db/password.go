@@ -89,7 +89,7 @@ func SelectByGroup(name string) ([]*Password, error) {
 	return db.doSelect(query, name)
 }
 
-// method used for selecting password
+// method used for selecting passwords
 // when both -n and -g flags are provided
 func SelectByGroupAndName(name string, group string) ([]*Password, error) {
 	db, err := decrypt()
