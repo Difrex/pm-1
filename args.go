@@ -472,6 +472,17 @@ func getLongestCommentField(passwords []*db.Password) int {
 	return counter
 }
 
+func getLongestIdField(passwords []*db.Password) int {
+	counter := 0
+	for i := range passwords {
+		length := len(strconv.Itoa(passwords[i].Id))
+		if length > counter {
+			counter = length
+		}
+	}
+	return counter
+}
+
 func printTable(passwords []*db.Password) {
 	longestName := getLongestNameField(passwords)
 	nameAddSpaces := 0
@@ -481,16 +492,22 @@ func printTable(passwords []*db.Password) {
 	usernameAddSpaces := 0
 	longestGroup := getLongestGroupField(passwords)
 	groupAddSpaces := 0
-	longestComment := getLongestCommentField(passwords)
-	commentAddSpaces := 0
+	longestId := getLongestIdField(passwords)
 
 	fmt.Println()
 
-	c := color.New(color.FgRed)
-	if longestName > 4 {
-		c.Printf("name" + strings.Repeat(" ", longestName-4))
+	c := color.New(color.FgYellow)
+	if longestId > 1 {
+		c.Printf("id" + strings.Repeat(" ", longestId))
 	} else {
-		c.Printf("name ")
+		c.Printf("id")
+	}
+
+	c = color.New(color.FgRed)
+	if longestName > 4 {
+		c.Printf(" name" + strings.Repeat(" ", longestName-4))
+	} else {
+		c.Printf(" name ")
 		nameAddSpaces = 4 - longestName + 1
 	}
 	c = color.New(color.FgGreen)
@@ -518,28 +535,21 @@ func printTable(passwords []*db.Password) {
 		groupAddSpaces = 5 - longestGroup + 1
 	}
 	c = color.New(color.FgCyan)
-	if longestComment > 6 {
-		c.Printf(" comment" + strings.Repeat(" ", longestComment-6))
-	} else {
-		c.Printf(" comment ")
-		commentAddSpaces = 6 - longestComment + 1
-	}
-	c = color.New(color.FgYellow)
-	c.Printf("id\n")
+	c.Printf(" comment\n")
 	fmt.Println()
 	for _, p := range passwords {
+		idSpaces := longestId - len(strconv.Itoa(p.Id)) + 1 + longestId
 		nameSpaces := longestName - len(p.Name) + 1 + nameAddSpaces
 		resourceSpaces := longestResource - len(p.Resource) + 1 + resourceAddSpaces
 		usernameSpaces := longestUsername - len(p.Username) + 1 + usernameAddSpaces
 		groupSpaces := longestGroup - len(p.Group) + 1 + groupAddSpaces
-		commentSpaces := longestComment - len(p.Comment) + 1 + commentAddSpaces
 		fmt.Println(
-			p.Name + strings.Repeat(" ", nameSpaces) +
+			strconv.Itoa(p.Id) + strings.Repeat(" ", idSpaces) +
+				p.Name + strings.Repeat(" ", nameSpaces) +
 				p.Resource + strings.Repeat(" ", resourceSpaces) +
 				p.Username + strings.Repeat(" ", usernameSpaces) +
 				p.Group + strings.Repeat(" ", groupSpaces) +
-				p.Comment + strings.Repeat(" ", commentSpaces) +
-				strconv.Itoa(p.Id),
+				p.Comment,
 		)
 	}
 	fmt.Println()
