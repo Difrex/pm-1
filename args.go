@@ -226,13 +226,18 @@ func parseArgs() {
 					longestUsername := getLongestUsernameField(passwd)
 					longestGroup := getLongestGroupField(passwd)
 					fmt.Println()
-					fmt.Println("id" +
-						" name" + strings.Repeat(" ", longestName-4) +
-						" resource" + strings.Repeat(" ", longestResource-8) +
-						" username" + strings.Repeat(" ", longestUsername-8) +
-						" group" + strings.Repeat(" ", longestGroup-5) +
-						" comment",
-					)
+					c := color.New(color.FgYellow)
+					c.Printf("id")
+					c = color.New(color.FgRed)
+					c.Printf(" name" + strings.Repeat(" ", longestName-4))
+					c = color.New(color.FgGreen)
+					c.Printf(" resource" + strings.Repeat(" ", longestResource-8))
+					c = color.New(color.FgBlue)
+					c.Printf(" username" + strings.Repeat(" ", longestUsername-8))
+					c = color.New(color.FgMagenta)
+					c.Printf(" group" + strings.Repeat(" ", longestGroup-5))
+					c = color.New(color.FgCyan)
+					c.Printf(" comment\n")
 					fmt.Println()
 					for _, p := range passwd {
 						nameSpaces := longestName - len(p.Name) + 1
