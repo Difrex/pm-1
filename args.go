@@ -221,40 +221,7 @@ func parseArgs() {
 
 			if len(passwd) > 1 {
 				if table {
-					longestName := getLongestNameField(passwd)
-					longestResource := getLongestResourceField(passwd)
-					longestUsername := getLongestUsernameField(passwd)
-					longestGroup := getLongestGroupField(passwd)
-					fmt.Println()
-					c := color.New(color.FgYellow)
-					c.Printf("id")
-					c = color.New(color.FgRed)
-					c.Printf(" name" + strings.Repeat(" ", longestName-4))
-					c = color.New(color.FgGreen)
-					c.Printf(" resource" + strings.Repeat(" ", longestResource-8))
-					c = color.New(color.FgBlue)
-					c.Printf(" username" + strings.Repeat(" ", longestUsername-8))
-					c = color.New(color.FgMagenta)
-					c.Printf(" group" + strings.Repeat(" ", longestGroup-5))
-					c = color.New(color.FgCyan)
-					c.Printf(" comment\n")
-					fmt.Println()
-					for _, p := range passwd {
-						nameSpaces := longestName - len(p.Name) + 1
-						resourceSpaces := longestResource - len(p.Resource) + 1
-						usernameSpaces := longestUsername - len(p.Username) + 1
-						groupSpaces := longestGroup - len(p.Group) + 1
-
-						fmt.Println(strconv.Itoa(p.Id) + "  " +
-							p.Name + strings.Repeat(" ", nameSpaces) +
-							p.Resource + strings.Repeat(" ", resourceSpaces) +
-							p.Username + strings.Repeat(" ", usernameSpaces) +
-							p.Group + strings.Repeat(" ", groupSpaces) +
-							p.Comment,
-						)
-					}
-					fmt.Println()
-
+					printTable(passwd)
 				} else {
 					db.PrintPaswords(passwd)
 				}
@@ -294,9 +261,13 @@ func parseArgs() {
 				return
 			}
 
-			fmt.Print("Group: ")
-			color.Magenta(group)
-			db.PrintPaswords(passwords)
+			if table {
+				printTable(passwords)
+			} else {
+				fmt.Print("Group: ")
+				color.Magenta(group)
+				db.PrintPaswords(passwords)
+			}
 		}
 
 		if name != "" && group != "" {
@@ -489,4 +460,87 @@ func getLongestUsernameField(passwords []*db.Password) int {
 		}
 	}
 	return counter
+}
+
+func getLongestCommentField(passwords []*db.Password) int {
+	counter := 0
+	for i := range passwords {
+		if len(passwords[i].Comment) > counter {
+			counter = len(passwords[i].Comment)
+		}
+	}
+	return counter
+}
+
+func printTable(passwords []*db.Password) {
+	longestName := getLongestNameField(passwords)
+	nameAddSpaces := 0
+	longestResource := getLongestResourceField(passwords)
+	resourceAddSpaces := 0
+	longestUsername := getLongestUsernameField(passwords)
+	usernameAddSpaces := 0
+	longestGroup := getLongestGroupField(passwords)
+	groupAddSpaces := 0
+	longestComment := getLongestCommentField(passwords)
+	commentAddSpaces := 0
+
+	fmt.Println()
+
+	c := color.New(color.FgRed)
+	if longestName > 4 {
+		c.Printf("name" + strings.Repeat(" ", longestName-4))
+	} else {
+		c.Printf("name ")
+		nameAddSpaces = 4 - longestName + 1
+	}
+	c = color.New(color.FgGreen)
+	if longestResource > 8 {
+		c.Printf(" resource" + strings.Repeat(" ", longestResource-8))
+	} else {
+		c.Printf(" resource ")
+		resourceAddSpaces = 8 - longestResource + 1
+	}
+	c = color.New(color.FgBlue)
+	if longestUsername > 8 {
+
+		c.Printf(" username" + strings.Repeat(" ", longestUsername-8))
+	} else {
+
+		c.Printf(" username ")
+		usernameAddSpaces = 8 - longestUsername + 1
+	}
+	c = color.New(color.FgMagenta)
+	if longestGroup > 5 {
+		c.Printf(" group" + strings.Repeat(" ", longestGroup-5))
+	} else {
+
+		c.Printf(" group ")
+		groupAddSpaces = 5 - longestGroup + 1
+	}
+	c = color.New(color.FgCyan)
+	if longestComment > 6 {
+		c.Printf(" comment" + strings.Repeat(" ", longestComment-6))
+	} else {
+		c.Printf(" comment ")
+		commentAddSpaces = 6 - longestComment + 1
+	}
+	c = color.New(color.FgYellow)
+	c.Printf("id\n")
+	fmt.Println()
+	for _, p := range passwords {
+		nameSpaces := longestName - len(p.Name) + 1 + nameAddSpaces
+		resourceSpaces := longestResource - len(p.Resource) + 1 + resourceAddSpaces
+		usernameSpaces := longestUsername - len(p.Username) + 1 + usernameAddSpaces
+		groupSpaces := longestGroup - len(p.Group) + 1 + groupAddSpaces
+		commentSpaces := longestComment - len(p.Comment) + 1 + commentAddSpaces
+		fmt.Println(
+			p.Name + strings.Repeat(" ", nameSpaces) +
+				p.Resource + strings.Repeat(" ", resourceSpaces) +
+				p.Username + strings.Repeat(" ", usernameSpaces) +
+				p.Group + strings.Repeat(" ", groupSpaces) +
+				p.Comment + strings.Repeat(" ", commentSpaces) +
+				strconv.Itoa(p.Id),
+		)
+	}
+	fmt.Println()
 }
