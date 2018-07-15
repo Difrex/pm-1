@@ -512,6 +512,7 @@ func printTable(passwords []*db.Password) {
 	usernameAddSpaces := 0
 	longestGroup := getLongestGroupField(passwords)
 	groupAddSpaces := 0
+	totalSpaces := 0
 
 	fmt.Println()
 
@@ -520,42 +521,54 @@ func printTable(passwords []*db.Password) {
 	if longestId < 2 {
 		idAddSpaces = 1
 		c.Printf("id ")
+		totalSpaces += 3
 	} else {
 		c.Printf("id" + strings.Repeat(" ", (longestId-2)+1))
+		totalSpaces += longestId
 	}
 
 	c = color.New(color.FgRed)
 	if longestName < 4 {
 		nameAddSpaces = 4 - longestName
+		totalSpaces += 5
 		c.Printf("name ")
 	} else {
 		c.Printf("name" + strings.Repeat(" ", (longestName-4)+1))
+		totalSpaces += longestName
 	}
 
 	c = color.New(color.FgGreen)
 	if longestResource < 8 {
 		resourceAddSpaces = 8 - longestResource
+		totalSpaces += 9
 		c.Printf("resource ")
 	} else {
 		c.Printf("resource" + strings.Repeat(" ", (longestResource-8)+1))
+		totalSpaces += longestResource
 	}
 
 	c = color.New(color.FgBlue)
 	if longestUsername < 8 {
 		usernameAddSpaces = 8 - longestUsername
+		totalSpaces += 9
 		c.Printf("username ")
 	} else {
 		c.Printf("username" + strings.Repeat(" ", (longestUsername-8)+1))
+		totalSpaces += longestUsername
 	}
 
 	c = color.New(color.FgMagenta)
 	if longestGroup < 5 {
 		groupAddSpaces = 5 - longestGroup
+		totalSpaces += 6
 		c.Printf("group ")
 	} else {
 		c.Printf("group" + strings.Repeat(" ", (longestGroup-5)+1))
+		totalSpaces += longestGroup
 	}
+
 	fmt.Println()
+	fmt.Println(strings.Repeat("-", totalSpaces))
 
 	for _, p := range passwords {
 		idStr := strconv.Itoa(p.Id)
