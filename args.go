@@ -21,6 +21,7 @@ var (
 	user        string
 	comment     string
 	pass        string
+	length      int
 	remove      bool
 	id          int
 	open        bool
@@ -43,6 +44,7 @@ func printUsage() {
 -p [Password]           password
                         (if password is omitted PM will
                         generate a secure password)
+-L [Length]             length of generated password
 -r                      remove password
 -i                      password ID
 -o                      open link
@@ -62,6 +64,7 @@ func initArgs() {
 	pflag.StringVarP(&user, "user", "u", "", "username of the resource")
 	pflag.StringVarP(&comment, "comment", "c", "", "comment")
 	pflag.StringVarP(&pass, "password", "p", "", "password")
+	pflag.IntVarP(&length, "length", "L", 16, "length of generated password")
 	pflag.BoolVarP(&remove, "remove", "r", false, "remove password")
 	pflag.IntVarP(&id, "id", "i", -1, "password id")
 	pflag.BoolVarP(&open, "open", "o", false, "open link in browser")
@@ -335,7 +338,7 @@ func parseArgs() {
 		if pass != "" {
 			passwd = pass
 		} else {
-			passwd = db.GeneratePassword(16)
+			passwd = db.GeneratePassword(length)
 		}
 
 		err := db.AddPassword(&db.Password{
@@ -378,6 +381,20 @@ func addInteractive() {
 		return
 	}
 
+	if passwd == "" {
+		fmt.Print("length of generated password: ")
+		le, err := utils.ReadLine()
+		if err != nil {
+			fmt.Println("failed to read line:", err)
+			return
+		}
+		length, err = strconv.Atoi(le)
+		if err != nil {
+			fmt.Println("invalid input:", err)
+			return
+		}
+	}
+
 	fmt.Print("username: ")
 	username, err := utils.ReadLine()
 	if err != nil {
@@ -399,7 +416,7 @@ func addInteractive() {
 	}
 
 	if passwd == "" {
-		passwd = db.GeneratePassword(16)
+		passwd = db.GeneratePassword(length)
 	}
 
 	err = db.AddPassword(&db.Password{

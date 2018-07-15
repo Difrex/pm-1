@@ -106,6 +106,9 @@ func SelectByGroupAndName(name string, group string) ([]*Password, error) {
 // method used for generating a password
 // of given length
 func GeneratePassword(length int) string {
+	if length < 16 {
+		length = 16
+	}
 	bytes, _ := exec.Command("head", "-c4096", "/dev/urandom").Output()
 	hash := fmt.Sprintf("%x", md5.Sum(bytes))
 	b64 := []rune(base64.StdEncoding.EncodeToString([]byte(hash)))
