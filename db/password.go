@@ -125,11 +125,3 @@ func GeneratePassword(length int) string {
 
 	return string(outStr)
 }
-
-// method used for printing a passwords array
-func PrintPaswords(passwords []*Password) {
-	for _, p := range passwords {
-		fmt.Printf("%d | %s | %s | %s | %s | %s\n",
-			p.Id, p.Name, p.Resource, p.Username, p.Group, p.Comment)
-	}
-}
