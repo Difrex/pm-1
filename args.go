@@ -524,7 +524,7 @@ func printTable(passwords []*db.Password) {
 		totalSpaces += 3
 	} else {
 		c.Printf("id" + strings.Repeat(" ", (longestId-2)+1))
-		totalSpaces += longestId
+		totalSpaces += longestId + 1
 	}
 
 	c = color.New(color.FgRed)
@@ -534,7 +534,7 @@ func printTable(passwords []*db.Password) {
 		c.Printf("name ")
 	} else {
 		c.Printf("name" + strings.Repeat(" ", (longestName-4)+1))
-		totalSpaces += longestName
+		totalSpaces += longestName + 1
 	}
 
 	c = color.New(color.FgGreen)
@@ -544,7 +544,7 @@ func printTable(passwords []*db.Password) {
 		c.Printf("resource ")
 	} else {
 		c.Printf("resource" + strings.Repeat(" ", (longestResource-8)+1))
-		totalSpaces += longestResource
+		totalSpaces += longestResource + 1
 	}
 
 	c = color.New(color.FgBlue)
@@ -554,7 +554,7 @@ func printTable(passwords []*db.Password) {
 		c.Printf("username ")
 	} else {
 		c.Printf("username" + strings.Repeat(" ", (longestUsername-8)+1))
-		totalSpaces += longestUsername
+		totalSpaces += longestUsername + 1
 	}
 
 	c = color.New(color.FgMagenta)
