@@ -512,6 +512,8 @@ func printPasswords(passwords []*db.Password) {
 		c.Println("resource: ", p.Resource)
 		c = color.New(color.FgBlue)
 		c.Println("username: ", p.Username)
+		c = color.New(color.FgCyan)
+		c.Println("comment:", p.Comment)
 		c = color.New(color.FgMagenta)
 		c.Println("group: ", p.Group)
 		fmt.Println()
@@ -527,6 +529,8 @@ func printTable(passwords []*db.Password) {
 	resourceAddSpaces := 0
 	longestUsername := getLongestUsernameField(passwords)
 	usernameAddSpaces := 0
+	longestComment := getLongestCommentField(passwords)
+	commentAddSpaces := 0
 	longestGroup := getLongestGroupField(passwords)
 	groupAddSpaces := 0
 	totalSpaces := 0
@@ -574,6 +578,16 @@ func printTable(passwords []*db.Password) {
 		totalSpaces += longestUsername + 1
 	}
 
+	c = color.New(color.FgCyan)
+	if longestComment < 7 {
+		commentAddSpaces = 7 - longestComment
+		totalSpaces += 8
+		c.Printf("comment ")
+	} else {
+		c.Printf("comment" + strings.Repeat(" ", (longestComment-7)+1))
+		totalSpaces += longestComment + 1
+	}
+
 	c = color.New(color.FgMagenta)
 	if longestGroup < 5 {
 		groupAddSpaces = 5 - longestGroup
@@ -593,6 +607,7 @@ func printTable(passwords []*db.Password) {
 		nameSpaces := (longestName - len(p.Name)) + nameAddSpaces + 1
 		resourceSpaces := (longestResource - len(p.Resource)) + resourceAddSpaces + 1
 		usernameSpaces := (longestUsername - len(p.Username)) + usernameAddSpaces + 1
+		commentSpaces := (longestComment - len(p.Comment)) + commentAddSpaces + 1
 		groupSpaces := (longestGroup - len(p.Group)) + groupAddSpaces + 1
 
 		fmt.Println(
@@ -600,6 +615,7 @@ func printTable(passwords []*db.Password) {
 				p.Name + strings.Repeat(" ", nameSpaces) +
 				p.Resource + strings.Repeat(" ", resourceSpaces) +
 				p.Username + strings.Repeat(" ", usernameSpaces) +
+				p.Comment + strings.Repeat(" ", commentSpaces) +
 				p.Group + strings.Repeat(" ", groupSpaces),
 		)
 	}
