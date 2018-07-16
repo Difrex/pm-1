@@ -334,14 +334,19 @@ func parseArgs() {
 		}
 
 		passwd := ""
+		var err error
 
 		if pass != "" {
 			passwd = pass
 		} else {
-			passwd = db.GeneratePassword(length)
+			passwd, err = db.GeneratePassword(length)
+			if err != nil {
+				fmt.Println("failed to generate password:", err)
+				return
+			}
 		}
 
-		err := db.AddPassword(&db.Password{
+		err = db.AddPassword(&db.Password{
 			Name:     name,
 			Resource: link,
 			Password: passwd,
@@ -416,7 +421,11 @@ func addInteractive() {
 	}
 
 	if passwd == "" {
-		passwd = db.GeneratePassword(length)
+		passwd, err = db.GeneratePassword(length)
+		if err != nil {
+			fmt.Println("failed to generate password:", err)
+			return
+		}
 	}
 
 	err = db.AddPassword(&db.Password{

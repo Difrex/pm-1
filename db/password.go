@@ -105,11 +105,16 @@ func SelectByGroupAndName(name string, group string) ([]*Password, error) {
 
 // method used for generating a password
 // of given length
-func GeneratePassword(length int) string {
+func GeneratePassword(length int) (string, error) {
 	if length < 16 {
 		length = 16
 	}
-	bytes, _ := exec.Command("head", "-c4096", "/dev/urandom").Output()
+
+	bytes, err := exec.Command("head", "-c4096", "/dev/urandom").Output()
+	if err != nil {
+		return "", err
+	}
+
 	hash := fmt.Sprintf("%x", md5.Sum(bytes))
 	b64 := []rune(base64.StdEncoding.EncodeToString([]byte(hash)))
 	chars := []rune("!@()#$%^&")
@@ -126,5 +131,5 @@ func GeneratePassword(length int) string {
 		outStr[i] = b64[rand.Intn(len(b64))]
 	}
 
-	return string(outStr)
+	return string(outStr), nil
 }
