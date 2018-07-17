@@ -73,7 +73,7 @@ func SelectByName(name string) ([]*Password, error) {
 
 	query := "select id, name, username, resource, password" +
 		", comment, `group` from passwords where name=?"
-	return db.doSelect(query, true, name)
+	return db.doSelect(query, name)
 }
 
 // method used for selecting passwords
@@ -84,9 +84,9 @@ func SelectByGroup(name string) ([]*Password, error) {
 		return nil, err
 	}
 
-	query := "select id, name, username, resource" +
+	query := "select id, name, username, resource, password" +
 		", comment, `group` from passwords where `group`=?"
-	return db.doSelect(query, false, name)
+	return db.doSelect(query, name)
 }
 
 // method used for selecting passwords
@@ -100,7 +100,7 @@ func SelectByGroupAndName(name string, group string) ([]*Password, error) {
 	query := "select id, name, username, resource, password" +
 		", comment, `group` from passwords where name=?" +
 		" and `group`=?"
-	return db.doSelect(query, true, name, group)
+	return db.doSelect(query, name, group)
 }
 
 // method used for generating a password
