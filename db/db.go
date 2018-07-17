@@ -98,7 +98,7 @@ func (db *DB) doQuery(query string, args ...interface{}) error {
 }
 
 // method used for performing SELECT queries on a database
-func (db *DB) doSelect(query string, args ...interface{}) ([]*Password, error) {
+func (db *DB) doSelect(query string, scanPassword bool, args ...interface{}) ([]*Password, error) {
 	defer func() {
 		db.Conn.Close()
 		err := utils.Rmfile(db.Path)
@@ -116,15 +116,26 @@ func (db *DB) doSelect(query string, args ...interface{}) ([]*Password, error) {
 	var passwords []*Password
 	for rows.Next() {
 		passwd := &Password{}
-		err = rows.Scan(
-			&passwd.Id,
-			&passwd.Name,
-			&passwd.Username,
-			&passwd.Resource,
-			&passwd.Password,
-			&passwd.Comment,
-			&passwd.Group,
-		)
+		if scanPassword {
+			err = rows.Scan(
+				&passwd.Id,
+				&passwd.Name,
+				&passwd.Username,
+				&passwd.Resource,
+				&passwd.Password,
+				&passwd.Comment,
+				&passwd.Group,
+			)
+		} else {
+			err = rows.Scan(
+				&passwd.Id,
+				&passwd.Name,
+				&passwd.Username,
+				&passwd.Resource,
+				&passwd.Comment,
+				&passwd.Group,
+			)
+		}
 
 		if err != nil {
 			return nil, err
