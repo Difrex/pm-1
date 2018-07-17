@@ -18,7 +18,20 @@ func encrypt(path string) error {
 		}
 	}
 
-	err := gpg.EncryptFileRecipientSelf(path, dbPath)
+	keyPath := os.Getenv("HOME") + "/.PM/.key"
+
+	var err error
+	if utils.PathExists(keyPath) {
+		key, err := utils.ReadFile(keyPath)
+		if err != nil {
+			return err
+		}
+
+		err = gpg.EncryptFile(key, path, dbPath)
+	} else {
+		err = gpg.EncryptFileRecipientSelf(path, dbPath)
+	}
+
 	if err != nil {
 		return err
 	}

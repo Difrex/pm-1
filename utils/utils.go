@@ -14,6 +14,8 @@ import (
 
 	"errors"
 
+	"io/ioutil"
+
 	"github.com/ctcpip/notifize"
 )
 
@@ -41,6 +43,13 @@ func Mkfile(name string) error {
 // removing a file
 func Rmfile(path string) error {
 	return os.Remove(path)
+}
+
+// reading a file
+func ReadFile(path string) (out string, err error) {
+	body, err := ioutil.ReadFile(path)
+
+	return strings.TrimSpace(string(body)), err
 }
 
 // getting correct prefix depending on the user's OS
