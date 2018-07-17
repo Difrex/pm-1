@@ -218,7 +218,7 @@ func parseArgs() {
 				return
 			}
 			if passwd == nil {
-				fmt.Println("no password found for name", name)
+				fmt.Println("no passwords found for name", name)
 				return
 			}
 
