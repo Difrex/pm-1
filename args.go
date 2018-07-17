@@ -37,7 +37,10 @@ func printUsage() {
 -s                      show password
 -n [Name of resource]   name of resource
 -g [Group name]         group name
+-o                      open link
+-t                      show passwords as table
 -w                      store new password
+-I                      interactive mode for adding new password
 -l [Link]               link to resource
 -u                      username
 -c                      comment
@@ -47,11 +50,8 @@ func printUsage() {
 -L [Length]             length of generated password
 -r                      remove password
 -i                      password ID
--o                      open link
--I                      interactive mode for adding new password
 -m                      show dmenu
 -R                      show rofi
--t                      print passwords table
 -h                      show help`)
 }
 
